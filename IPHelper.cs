@@ -1,7 +1,4 @@
-﻿
-using System.Net;
-
-namespace ScanIpv4;
+﻿namespace ScanIpv4;
 
 public static partial class IPHelper
 {
@@ -30,15 +27,12 @@ public static partial class IPHelper
 	public static string getPort(IPAddress address)
 	{
 		StringBuilder port = new();
+		Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-		for (int i = 0; i <= 65535; i++)
-		{
-			Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+		for (int i = 0; i <= 30000; i++)		
 			s.BeginConnect(new IPEndPoint(address, i), EndConnectTcp, s);
-		}
-			
-		foreach (int s in openPorts)
-			port.Append(s + ", ");
+
+		openPorts.ForEach(s => port.Append(string.Join(", ", s)));
 
 		return port.ToString();
 	}

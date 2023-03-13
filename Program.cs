@@ -5,11 +5,11 @@ internal class Program
 	static int ThreadCount = 20;
 	private static List<Thread> threadList = new();
 	private static Queue<string> ipList = new();
-	private static bool scanPort = true;
+	private static bool scanPort = false;
 
 	static void Main(string[] args)
 	{
-		foreach (IPAddress addr in new IPEnumeration("192.168.1.0", "192.168.1.254"))
+		foreach (IPAddress addr in new IPEnumeration("192.168.1.0", "192.168.1.49"))
 			ipList.Enqueue(addr.ToString());
 
 		SpawnThreads();

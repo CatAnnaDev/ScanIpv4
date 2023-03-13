@@ -1,8 +1,13 @@
 ﻿
+using System.Net;
+
 namespace ScanIpv4;
 
 public static partial class IPHelper
 {
+	static List<int> openPorts = new List<int>();
+	static int waitingForResponses = 0;
+
 	[LibraryImport("iphlpapi.dll")]
 	public static partial int SendARP(int DestIP, int SrcIP, byte[] pMacAddr, ref uint PhyAddrLen);
 
@@ -25,20 +30,41 @@ public static partial class IPHelper
 	public static string getPort(IPAddress address)
 	{
 		StringBuilder port = new();
-		foreach (int s in Ports)
+
+		for (int i = 0; i <= 65535; i++)
 		{
-			using (TcpClient Scan = new TcpClient())
-			{
-				try
-				{
-					Scan.Connect(address, s);
-					port.Append(s +", ");
-				}
-				catch{}
-			}
+			Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			s.BeginConnect(new IPEndPoint(address, i), EndConnectTcp, s);
 		}
+			
+		foreach (int s in openPorts)
+			port.Append(s + ", ");
+
 		return port.ToString();
 	}
+
+	static void EndConnectTcp(IAsyncResult ar)
+	{
+		try
+		{
+			DecrementResponses();
+			Socket s = ar.AsyncState as Socket;
+			s.EndConnect(ar);
+			if (s.Connected)
+			{
+				var openPort = Convert.ToInt32(s.RemoteEndPoint.ToString().Split(':')[1]);
+				openPorts.Add(openPort);
+				s.Disconnect(true);
+			}
+		}
+		catch{}
+	}
+
+	static void DecrementResponses()
+	{
+		Interlocked.Decrement(ref waitingForResponses);
+	}
+
 
 	private static int[] Ports = new int[]
 	{

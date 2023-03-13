@@ -5,7 +5,7 @@ internal class Program
 	static int ThreadCount = 20;
 	private static List<Thread> threadList = new();
 	private static Queue<string> ipList = new();
-	private static bool scanPort = false;
+	private static bool scanPort = true;
 
 	static void Main(string[] args)
 	{
